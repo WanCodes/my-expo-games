@@ -1,56 +1,107 @@
-# Welcome to your Expo app 👋
+# Wan's Game Arcade
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+[![Expo](https://img.shields.io/badge/Expo-SDK%2055-000020?logo=expo&logoColor=white)](https://expo.dev)
+[![React Native](https://img.shields.io/badge/React%20Native-0.83-20232A?logo=react&logoColor=61DAFB)](https://reactnative.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
-## Get started
+A local arcade for iOS, Android, and web. One home screen lists the catalog; each game is its own screen. Built with Expo, React Native, and TypeScript.
 
-1. Install dependencies
+**Wan Yau** · London · [github.com/WanCodes](https://github.com/WanCodes)
 
-   ```bash
-   npm install
-   ```
+## Overview
 
-2. Start the app
+Wan's Game Arcade is a small multi-game shell. The home screen reads a typed `GAMES` registry and opens each playable entry with Expo Router. The first game is local two-player Tic-Tac-Toe. Board state stays in that game's hook for the current session.
 
-   ```bash
-   npx expo start
-   ```
+The on-screen title is **Wan's Game Arcade**. The Expo project name, slug, and npm package name are still `my-first-expo`.
 
-In the output, you'll find options to open the app in a
+Design notes (architecture, patterns, and a decision log) live in [`planning/`](planning/architecture-and-planning.md). Step-by-step build notes live in [`tasks/`](tasks/README.md).
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Games
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### Tic-Tac-Toe
 
-## Get a fresh project
+Route: `/games/tic-tac-toe` · screen: [`src/app/games/tic-tac-toe.tsx`](src/app/games/tic-tac-toe.tsx) · rules: [`src/app/games/useTicTacToe.ts`](src/app/games/useTicTacToe.ts)
 
-When you're ready, run:
+- Classic 3×3 grid, X then O, on one device.
+- Wins are checked on rows, columns, and both diagonals.
+- A full board with no winner is a draw.
+- The status line shows whose turn it is, who won, or that the game is a draw.
+- **Play again** clears the board and returns the turn to X.
+- **Back to games** navigates to the home catalog.
+- Taps on a filled cell, or any cell after a win or draw, are ignored.
+- Each cell has an accessibility label (`Cell 1` through `Cell 9`).
+
+### Catalog
+
+Playable games are declared in [`src/constants/games.ts`](src/constants/games.ts) against the `Game` type in [`src/types/game.ts`](src/types/game.ts): `id`, `name`, `description`, `route`, and an optional `comingSoon` flag.
+
+The home list ([`src/app/index.tsx`](src/app/index.tsx)) renders that registry. A `comingSoon` entry stays visible, shows a "Coming soon" label, and disables **Play**. Today the registry contains only Tic-Tac-Toe.
+
+Adding a game is a registry entry plus a screen under `src/app/games`.
+
+## Tech
+
+| | |
+| --- | --- |
+| Expo | SDK 55 (`expo` ~55.0.4) |
+| React Native | 0.83.2 |
+| React | 19.2.0 |
+| TypeScript | ~5.9, `strict` |
+| Navigation | Expo Router ~55, with typed routes enabled |
+| Gesture and animation | `react-native-gesture-handler`, `react-native-reanimated` 4, `react-native-worklets` |
+| Targets | iOS, Android, and static web export |
+
+How the app is put together:
+
+- Routes live in `src/app`. The home catalog is `src/app/index.tsx`. The `@/*` path alias maps to `src/*` (`@/assets/*` maps to `assets/*`).
+- [`src/app/_layout.tsx`](src/app/_layout.tsx) follows the system color scheme through React Navigation's light and dark themes, then mounts an animated splash and the tab navigator.
+- The splash ([`src/components/animated-icon.tsx`](src/components/animated-icon.tsx)) is a Reanimated keyframe that scales and fades, then unmounts.
+- iOS and Android use Expo Router native tabs ([`src/components/app-tabs.tsx`](src/components/app-tabs.tsx)). Web uses a custom tab bar ([`src/components/app-tabs.web.tsx`](src/components/app-tabs.web.tsx)). Both expose **Home**, **Explore**, and **Tic Tac Toe**.
+- **Explore** ([`src/app/explore.tsx`](src/app/explore.tsx)) is the Expo template reference screen: file-based routing notes, images, light and dark mode, and a Reanimated collapsible.
+- Color, type, and spacing tokens live in [`src/constants/theme.ts`](src/constants/theme.ts) and feed `ThemedText` / `ThemedView`. Content is capped at 800px wide.
+- `app.json` enables the `typedRoutes` and `reactCompiler` experiments, portrait orientation, and a static web export.
+
+## Getting started
+
+You need [Node.js and npm](https://docs.expo.dev/get-started/installation/) at a version Expo SDK 55 supports, plus a way to open the app: Expo Go, an iOS simulator, an Android emulator, or a browser.
 
 ```bash
-npm run reset-project
+npm install
+npm start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+`npm start` runs `expo start`. From that terminal you can open:
 
-### Other setup steps
+- a [development build](https://docs.expo.dev/develop/development-builds/introduction/)
+- an [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
+- an [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
+- [Expo Go](https://expo.dev/go)
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+Or start a target directly:
 
-## Learn more
+```bash
+npm run ios
+npm run android
+npm run web
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+Screens live under `src/app`. This project uses [file-based routing](https://docs.expo.dev/router/introduction/).
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Scripts
 
-## Join the community
+| Script | Command | What it runs |
+| --- | --- | --- |
+| `start` | `npm start` | `expo start` |
+| `ios` | `npm run ios` | `expo start --ios` |
+| `android` | `npm run android` | `expo start --android` |
+| `web` | `npm run web` | `expo start --web` |
+| `lint` | `npm run lint` | `expo lint` |
+| `reset-project` | `npm run reset-project` | `node ./scripts/reset-project.js` |
 
-Join our community of developers creating universal apps.
+`npm run lint` invokes Expo's linter. This repo does not include an ESLint config yet, so the first run follows Expo's lint setup prompt. See [Using ESLint and Prettier](https://docs.expo.dev/guides/using-eslint/).
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+`reset-project` is the Expo starter helper. It asks before moving `src` and `scripts` aside and writing a blank `src/app`. Running it removes the arcade. Use **Play again** inside Tic-Tac-Toe to start a new match.
+
+## License
+
+No `LICENSE` file is checked in, and the GitHub repository has no license set. The code is all rights reserved until a license is added.
